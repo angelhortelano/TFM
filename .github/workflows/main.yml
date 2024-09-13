@@ -43,4 +43,4 @@ jobs:
           --cpu=1 \
           --region=europe-southwest1 \
           --project=tfm-dev-433217 \
-           && gcloud run services update-traffic app-trafico --to-latest
+           && gcloud run services update-traffic app-trafico --to-latest --region=europe-southwest1
