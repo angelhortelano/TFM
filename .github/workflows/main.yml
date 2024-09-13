@@ -41,7 +41,7 @@ jobs:
         gcloud run deploy app-trafico \
           --image europe-southwest1-docker.pkg.dev/tfm-dev-433217/trafico-image-repo/app-trafico:latest \
           --cpu=1 \
-          --set-env-vars=SERVER_RUN=True
+          --set-env-vars=SERVER_RUN=True \
           --region=europe-southwest1 \
           --project=tfm-dev-433217 \
            && gcloud run services update-traffic app-trafico --to-latest --region=europe-southwest1
