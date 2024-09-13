@@ -27,4 +27,4 @@ def getStorageClient():
     return storage_client
 
 def is_running_on_gcp():
-    return 'GOOGLE_CLOUD_PROJECT' in os.environ or 'GAE_ENV' in os.environ
+    return 'GCLOUD_PROJECT' in os.environ or 'GAE_ENV' in os.environ
