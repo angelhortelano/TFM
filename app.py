@@ -32,8 +32,6 @@ def create_app():
         client = google.cloud.logging.Client()
         client.setup_logging()   
 
-        os.environ["NUMEXPR_MAX_THREADS"] = config.NUMEXPR_MAX_THREADS
-
         # Load API Key from Secret Manager
         secret_client = secretmanager.SecretManagerServiceClient()
         GOOGLE_API_KEY = secret_client.access_secret_version(name=config.SECRET_MANAGER_API_KEY_PATH).payload.data.decode("utf-8")
@@ -115,9 +113,9 @@ def get_conversational_chain(retriever, session_id, model):
     return conversational_rag_chain
 
 
-def user_input(user_question, k_value, session_id, db_embeddings, model):
-    retriever = db_embeddings.as_retriever(search_kwargs={"k": k_value})
-
+def user_input(user_question, session_id, db_embeddings, model):
+    retriever = db_embeddings.as_retriever(search_kwargs={"k": config.K_VALUES})
+    
     chain = get_conversational_chain(retriever, session_id, model)
     response = chain.invoke(
         {"input": user_question},
@@ -128,9 +126,9 @@ def user_input(user_question, k_value, session_id, db_embeddings, model):
     return response
     
     
-def response_generator(prompt, k_value, session_id, db_embeddings, model):
+def response_generator(prompt, session_id, db_embeddings, model):
     start_model_exec = time.time()
-    response = user_input(prompt, k_value, session_id, db_embeddings, model)
+    response = user_input(prompt, session_id, db_embeddings, model)
     end_model_exec = time.time()
 
     resp_text = "{0} ({1:.2f} seg.).".format(response["answer"], end_model_exec - start_model_exec)
@@ -151,9 +149,7 @@ def main():
         # Initialization
         if 'session_id' not in st.session_state:
             st.session_state['session_id'] = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    
-        k_value = st.sidebar.number_input( "Inserta el valor de k", value=7, placeholder="Ingresa un entero...", min_value=1, format="%d")
-        
+            
         st.header("Chat con el modelo", divider="gray")
     
         # Initialize chat history
@@ -184,7 +180,7 @@ def main():
                 # Display assistant response in chat message container
                 with st.chat_message("assistant"):
                     #response = st.write_stream(response_generator(prompt, model_chat, st.session_state.context, chunk_size, k_value))
-                    response = st.write_stream(response_generator(prompt, k_value, st.session_state['session_id'], db_embeddings, model))
+                    response = st.write_stream(response_generator(prompt, st.session_state['session_id'], db_embeddings, model))
 
                 # Add assistant response to chat history
                 st.session_state.messages.append({"role": "assistant", "content": response})
