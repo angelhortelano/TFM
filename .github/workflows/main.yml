@@ -39,7 +39,7 @@ jobs:
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy app-trafico \
-          --image europe-southwest1-docker.pkg.dev/tfm-dev-433217/your-repository/your-image-name:latest \
+          --image europe-southwest1-docker.pkg.dev/tfm-dev-433217/trafico-image-repo/app-trafico:latest \
           --cpu=1 \
           --region=europe-southwest1 \
           --project=tfm-dev-433217 \
