@@ -1,0 +1,4 @@
+google-api-key.json
+faiss_index_google/
+.gitignore
+prompts.json
