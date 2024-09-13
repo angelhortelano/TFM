@@ -131,15 +131,36 @@ def response_generator(prompt, session_id, db_embeddings, model):
     response = user_input(prompt, session_id, db_embeddings, model)
     end_model_exec = time.time()
 
-    resp_text = "{0} ({1:.2f} seg.).".format(response["answer"], end_model_exec - start_model_exec)
+    resp_text = "{0} *({1:.2f} seg.)*.".format(response["answer"], end_model_exec - start_model_exec)
     for word in resp_text.split(" "):
         yield word + " "
         time.sleep(0.05)
 
 
+def response_generator_bot(text):
+    for word in text.split(" "):
+        yield word + " "
+        time.sleep(0.05)
+        
+        
+def create_new_chat():
+    st.session_state["chats_count"] += 1
+    st.session_state["history_chats"] = st.session_state["history_chats"] + ["Chat " + str(st.session_state["chats_count"])]
+    st.session_state["current_chat_index"] = st.session_state["chats_count"]-1
+
+
 def main():
     try:
-        st.set_page_config(page_title="Chat legal v1.0", page_icon="🇪🇸")
+        st.set_page_config(page_title="Semaforín v1.0", page_icon="🤖", layout="wide")
+        st.markdown("""
+<style>
+    .st-emotion-cache-1c7y2kd {
+        flex-direction: row-reverse;
+        text-align: right;
+    }
+</style>""",
+    unsafe_allow_html=True,
+)
         
         warnings.filterwarnings("ignore", category=FutureWarning)
         
@@ -147,47 +168,64 @@ def main():
         load_prompts()
 
         # Initialization
-        if 'session_id' not in st.session_state:
-            st.session_state['session_id'] = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-            
-        st.header("Chat con el modelo", divider="gray")
-    
-        # Initialize chat history
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
+        if "current_chat_index" not in st.session_state:
+            st.session_state["current_chat_index"] = 0
+            st.session_state["chats_count"] = 1
+            st.session_state["history_chats"] = ["Chat 1"]
         
-        # Inicializar el contexto de la conversación
-        if "context" not in st.session_state:
-            st.session_state.context = ""
+        session = "session_id" + str(st.session_state["current_chat_index"])
+        messages = "messages" + str(st.session_state["current_chat_index"])
+        if session not in st.session_state:
+            st.session_state[session] = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+            st.session_state[messages] = []
+            st.session_state[messages].append({"role": "Semaforín", "content": "Hola! 👋 Soy Semaforín 🤖, tu colega-bot que responde preguntas ❓ sobre las leyes de Tráfico y Seguridad Vial 🚗 en España. Hazme las preguntas y yo trataré de responderlas 💪."})
+
+        with st.sidebar:
+            st.title("Semaforín v1.0")
+            st.subheader( "Bienvenida/o a Semaforín v1.0! El primer colega-bot que responde sobre las leyes del Código de Tráfico y Seguridad Vial de España." )
+            current_chat = st.radio(
+                label="Lista de chats",
+                options=st.session_state["history_chats"],
+                #index=st.session_state["current_chat_index"],
+                key="chat_radiobutton"
+            )
+            if current_chat:
+                st.session_state["current_chat_index"] = st.session_state["history_chats"].index(current_chat)
+                    
+            create_chat_button = st.button("Nuevo chat", use_container_width=True, key="create_chat_button")
+            if create_chat_button:
+                create_new_chat()
+                st.rerun()
+        
+        avatar_assistant = 'https://raw.githubusercontent.com/hmdibella/tfm_app/main/perfil_bot.jpg'
+        avatar_user = 'https://raw.githubusercontent.com/hmdibella/tfm_app/main/perfil_humano.jpg'
         
         # Display chat messages from history on app rerun
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
+        current_state = st.session_state["messages"+str(st.session_state["current_chat_index"])]
+        for message in current_state:
+            avatar_img = avatar_assistant if message["role"] == "Semaforín" else avatar_user
+            with st.chat_message(message["role"], avatar=avatar_img):
                 st.markdown(message["content"])
+      
     
         # Accept user input
-        if prompt := st.chat_input("Haz una pregunta sobre el Código de Tráfico y Seguridad Vial en España"):
+        if prompt := st.chat_input("Haz la pregunta aquí"):
             logging.info(f"User input: {prompt}")
             # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": prompt})
+            current_state.append({"role": "user", "content": prompt})
             # Display user message in chat message container
-            with st.chat_message("user"):
+            with st.chat_message("user", avatar=avatar_user):
                 st.markdown(prompt)
                 
-
+            session = 'session_id'+str(st.session_state["current_chat_index"])
             with st.spinner("Procesando, por favor espere..."):
                 
                 # Display assistant response in chat message container
-                with st.chat_message("assistant"):
-                    #response = st.write_stream(response_generator(prompt, model_chat, st.session_state.context, chunk_size, k_value))
-                    response = st.write_stream(response_generator(prompt, st.session_state['session_id'], db_embeddings, model))
+                with st.chat_message("Semaforín", avatar=avatar_assistant):
+                    response = st.write_stream(response_generator(prompt, st.session_state[session], db_embeddings, model))
 
                 # Add assistant response to chat history
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                
-                # Agregar la pregunta y la respuesta al contexto
-                st.session_state.context += f"Pregunta: {prompt}\n"
-                st.session_state.context += f"Respuesta: {response}\n"
+                current_state.append({"role": "Semaforín", "content": response})
             
             logging.info(f"Application response: {response}")
     except Exception as e:
