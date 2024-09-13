@@ -1,0 +1,10 @@
+streamlit
+langchain-core
+langchain-community
+langchain-google-genai
+langchain
+langchain-huggingface
+google-cloud-storage
+google-cloud-secret-manager
+google-cloud-logging
+faiss-cpu
