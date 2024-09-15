@@ -20,34 +20,8 @@ MODEL_TEMPERATURE = 0.4
 
 ## SINGLETON FOR STORAGE CLIENT ##
 from google.cloud import storage
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-
 import os
 storage_client = None
-model = None
-db_embbedings = None
-
-def getGeminiModel():
-    global model
-    if(model is None):
-        model = ChatGoogleGenerativeAI(model = MODEL_LLM_GOOGLE, temperature = MODEL_TEMPERATURE)
-    return model
-
-def getGeminiModelNoTemp():
-    global model
-    if(model is None):
-        model = ChatGoogleGenerativeAI(model = MODEL_LLM_GOOGLE, temperature = 0)
-    return model
-
-def getDbEmbbedings():
-    global db_embbedings
-    if(db_embbedings is None):
-        embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
-        db_embbedings = FAISS.load_local(LOCAL_FAISS_FOLDER, embeddings, allow_dangerous_deserialization=True)
-
-    return db_embbedings
 
 def getStorageClient():
     global storage_client
