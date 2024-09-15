@@ -6,13 +6,10 @@ import string
 import time
 import logging
 
-from langchain_community.vectorstores import FAISS
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 import google.cloud.logging
 from langgraph.graph import END, StateGraph, START
@@ -65,11 +62,11 @@ def create_app():
         with(open("tavily-api-key.txt", "r")) as f:
             os.environ['TAVILY_API_KEY'] = f.read()
     
-    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
+    
 
-    db_embeddings = FAISS.load_local(config.LOCAL_FAISS_FOLDER, embeddings, allow_dangerous_deserialization=True)
-
-    model = ChatGoogleGenerativeAI(model = config.MODEL_LLM_GOOGLE, temperature = config.MODEL_TEMPERATURE)
+    db_embeddings = config.getDbEmbbedings()
+    model = config.getGeminiModel()
+    config.getGeminiModelNoTemp()
 
     logging.warning("Resources created.")
 
@@ -90,7 +87,7 @@ def load_prompts():
     PROMPT_TEMPLATE_GOOGLE = variables["PROMPT_TEMPLATE_GOOGLE"]
 
 def get_conversational_chain(retriever, session_id):    
-    model = ChatGoogleGenerativeAI(model = config.MODEL_LLM_GOOGLE, temperature = config.MODEL_TEMPERATURE)
+    model = config.getGeminiModel()
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", CONTEXTUALIZE_Q_SYSTEM_PROMPT),
@@ -197,8 +194,7 @@ def retrieve(state):
     question = state["question"]
 
     # Retrieval
-    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
-    db_embeddings = FAISS.load_local(config.LOCAL_FAISS_FOLDER, embeddings, allow_dangerous_deserialization=True)
+    db_embeddings = config.getDbEmbbedings()
     retriever = db_embeddings.as_retriever(search_kwargs={"k": config.K_VALUES})
     documents = retriever.invoke(question)
     return {"documents": documents, "question": question}
@@ -210,8 +206,7 @@ def generate(state):
     documents = state["documents"]
     session_id = state["session_id"]
 
-    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
-    new_db = FAISS.from_documents(documents, embeddings)
+    new_db = config.getDbEmbbedings()
     retriever = new_db.as_retriever(search_kwargs={"k": config.K_VALUES})
     chain = get_conversational_chain(retriever, session_id)
     generation = chain.invoke(
@@ -229,7 +224,7 @@ def route_question(state):
     question = state["question"]
     logging.debug(f"Question: " + question)
     
-    llm = ChatGoogleGenerativeAI(model = config.MODEL_LLM_GOOGLE, temperature = 0)
+    llm = config.getGeminiModelNoTemp()
 
     prompt = PromptTemplate(
         template="""You are an expert at routing a user question to a vectorstore or web search. Use the vectorstore for questions related to the laws in the 'Traffic and Road Safety Code in Spain' (in Spanish, 'Código de Tráfico y Seguridad Vial en España'). You do not need to be stringent with the keywords in the question related to these topics. Otherwise, use web-search. Give a binary choice 'web_search' or 'vectorstore' based on the question. Return the a JSON with a single key 'datasource' and no premable or explanation.\n\nQuestion to route: {question}""",
@@ -254,7 +249,7 @@ def grade_generation_v_documents_and_question(state):
     generation = state["generation"]
     logging.debug(f"Generation: " + generation["answer"])
     
-    llm = ChatGoogleGenerativeAI(model = config.MODEL_LLM_GOOGLE, temperature = 0)
+    llm = config.getGeminiModelNoTemp()
 
     # Prompt
     prompt = PromptTemplate(
@@ -299,7 +294,7 @@ def grade_documents(state):
     question = state["question"]
     documents = state["documents"]
 
-    llm = ChatGoogleGenerativeAI(model = config.MODEL_LLM_GOOGLE, temperature = 0)
+    llm = config.getGeminiModelNoTemp()
 
     prompt = PromptTemplate(
         template="""You are a grader assessing relevance of a retrieved document to a user question. If the document contains keywords related to the user question, grade it as relevant. It does not need to be a stringent test. The goal is to filter out erroneous retrievals.\nGive a binary score 'yes' or 'no' score to indicate whether the document is relevant to the question.\nProvide the binary score as a JSON with a single key 'score' and no premable or explanation.\n\nHere is the retrieved document: \n\n{document}\n\nHere is the user question: {question}\n""",
