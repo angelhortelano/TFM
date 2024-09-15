@@ -20,7 +20,7 @@ La **primera vez que arrancas la aplicación**, es posible que tarde entre **1 a
 
 ## Link de la Aplicación
 El enlace a la aplicación es el siguiente:  
-[**Enlace a la App**](#)
+[**Enlace a la App**](https://app-trafico-869260115209.europe-southwest1.run.app/)
 
 Haz clic en el enlace para acceder a la aplicación y empezar a interactuar con el modelo.
 
