@@ -2,6 +2,9 @@ PROJECT_ID = "tfm-dev-433217" # ID del proyecto de Google Cloud
 GEMINI_API_KEY = "GEMINI_API_KEY" # Secreto con el API Key de Gemini
 SECRET_MANAGER_API_KEY_PATH = "projects/{}/secrets/{}/versions/latest".format(PROJECT_ID, GEMINI_API_KEY) # Ruta del secreto con el API Key de Gemini
 
+TAVILY_API_KEY = "TAVILY_API_KEY"
+SECRET_MANAGER_TAVILY_API_KEY_PATH = "projects/{}/secrets/{}/versions/latest".format(PROJECT_ID, TAVILY_API_KEY) # Ruta del secreto con el API Key de Tavily
+
 BUCKET_FAISS_NAME = "faiss-trafico" # Bucket con embeddings
 FAISS_FILE_NAMES = ["index.faiss", "index.pkl"] # Archivos a descargar
 LOCAL_FAISS_FOLDER = "./faiss_index_google" # Carpeta local donde se guardan los archivos
