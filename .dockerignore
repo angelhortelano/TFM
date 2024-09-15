@@ -1,5 +1,4 @@
-google-api-key.txt
-tavily-api-key.txt
+google-api-key.json
 faiss_index_google/
 .gitignore
 prompts.json
