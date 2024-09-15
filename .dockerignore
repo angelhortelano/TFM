@@ -1,4 +1,4 @@
-google-api-key.json
+google-api-key.txt
 faiss_index_google/
 .gitignore
 prompts.json

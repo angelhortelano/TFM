@@ -8,4 +8,3 @@ google-cloud-storage==2.18.2
 google-cloud-secret-manager==2.20.2
 google-cloud-logging==3.11.2
 faiss-cpu==1.8.0.post1
-langgraph==0.2.21
