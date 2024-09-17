@@ -212,8 +212,8 @@ def main():
                 create_new_chat()
                 st.rerun()
 
-        avatar_assistant = 'https://raw.githubusercontent.com/hmdibella/tfm_app/main/perfil_bot.jpg'
-        avatar_user = 'https://raw.githubusercontent.com/hmdibella/tfm_app/main/perfil_humano.jpg'
+        avatar_assistant = './perfil_bot.jpg'
+        avatar_user = './perfil_humano.jpg'
 
         # Welcoming message
         st.markdown("<h1>Hola! 👋 Soy Semaforín 🤖</h1>", unsafe_allow_html=True)
