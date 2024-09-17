@@ -152,18 +152,34 @@ def create_new_chat():
 def main():
     try:
         st.set_page_config(page_title="Semaforín v1.0", page_icon="🤖", layout="wide")
+        
+        # CSS customization for the app
         st.markdown("""
-<style>
-    .st-emotion-cache-1c7y2kd {
-        flex-direction: row-reverse;
-        text-align: right;
-    }
-</style>""",
-    unsafe_allow_html=True,
-)
-        
+        <style>
+            .st-emotion-cache-1c7y2kd {
+                flex-direction: row-reverse;
+                text-align: right;
+            }
+            .rounded-image {
+                border-radius: 15px;
+            }
+            h1 {
+                font-size: 2.5rem;
+                color: white;
+                text-align: center;
+            }
+            h2 {
+                font-size: 1.25rem; 
+                color: white;
+                text-align: center;
+            }
+            .center-text {
+                text-align: center;
+            }
+        </style>""", unsafe_allow_html=True)
+
         warnings.filterwarnings("ignore", category=FutureWarning)
-        
+
         db_embeddings, model = create_app()
         load_prompts()
 
@@ -172,42 +188,46 @@ def main():
             st.session_state["current_chat_index"] = 0
             st.session_state["chats_count"] = 1
             st.session_state["history_chats"] = ["Chat 1"]
-        
+
         session = "session_id" + str(st.session_state["current_chat_index"])
         messages = "messages" + str(st.session_state["current_chat_index"])
         if session not in st.session_state:
             st.session_state[session] = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-            st.session_state[messages] = []
-            st.session_state[messages].append({"role": "Semaforín", "content": "Hola! 👋 Soy Semaforín 🤖, tu colega-bot que responde preguntas ❓ sobre las leyes de Tráfico y Seguridad Vial 🚗 en España. Hazme las preguntas y yo trataré de responderlas 💪."})
+            st.session_state[messages] = []  
 
+        # Sidebar
         with st.sidebar:
+            semaforin_image = './semaforin_image.jpg'  
+            st.image(semaforin_image, use_column_width=True)
             st.title("Semaforín v1.0")
-            st.subheader( "Bienvenida/o a Semaforín v1.0! El primer colega-bot que responde sobre las leyes del Código de Tráfico y Seguridad Vial de España." )
+            st.subheader("Bienvenida/o a Semaforín v1.0! El primer colega-bot que responde sobre las leyes del Código de Tráfico y Seguridad Vial de España.")
             current_chat = st.radio(
                 label="Lista de chats",
                 options=st.session_state["history_chats"],
-                #index=st.session_state["current_chat_index"],
                 key="chat_radiobutton"
             )
             if current_chat:
                 st.session_state["current_chat_index"] = st.session_state["history_chats"].index(current_chat)
-                    
+
             create_chat_button = st.button("Nuevo chat", use_container_width=True, key="create_chat_button")
             if create_chat_button:
                 create_new_chat()
                 st.rerun()
-        
+
         avatar_assistant = 'https://raw.githubusercontent.com/hmdibella/tfm_app/main/perfil_bot.jpg'
         avatar_user = 'https://raw.githubusercontent.com/hmdibella/tfm_app/main/perfil_humano.jpg'
-        
+
+        # Welcoming message
+        st.markdown("<h1>Hola! 👋 Soy Semaforín 🤖</h1>", unsafe_allow_html=True)
+        st.markdown("<h2>Tu colega-bot que responde preguntas ❓ sobre las leyes de Tráfico y Seguridad Vial 🚗 en España. Hazme las preguntas y yo trataré de responderlas 💪.</h2>", unsafe_allow_html=True)
+
         # Display chat messages from history on app rerun
         current_state = st.session_state["messages"+str(st.session_state["current_chat_index"])]
         for message in current_state:
             avatar_img = avatar_assistant if message["role"] == "Semaforín" else avatar_user
             with st.chat_message(message["role"], avatar=avatar_img):
                 st.markdown(message["content"])
-      
-    
+
         # Accept user input
         if prompt := st.chat_input("Haz la pregunta aquí"):
             logging.info(f"User input: {prompt}")
@@ -216,21 +236,20 @@ def main():
             # Display user message in chat message container
             with st.chat_message("user", avatar=avatar_user):
                 st.markdown(prompt)
-                
+
             session = 'session_id'+str(st.session_state["current_chat_index"])
             with st.spinner("Procesando, por favor espere..."):
-                
+
                 # Display assistant response in chat message container
                 with st.chat_message("Semaforín", avatar=avatar_assistant):
                     response = st.write_stream(response_generator(prompt, st.session_state[session], db_embeddings, model))
 
                 # Add assistant response to chat history
                 current_state.append({"role": "Semaforín", "content": response})
-            
+
             logging.info(f"Application response: {response}")
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-        
-        
+
 if __name__ == "__main__":
-   main()
+    main()
