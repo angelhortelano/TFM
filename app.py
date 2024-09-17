@@ -165,12 +165,10 @@ def main():
             }
             h1 {
                 font-size: 2.5rem;
-                color: white;
                 text-align: center;
             }
             h2 {
                 font-size: 1.25rem; 
-                color: white;
                 text-align: center;
             }
             .center-text {
