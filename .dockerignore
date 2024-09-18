@@ -2,3 +2,5 @@ google-api-key.txt
 faiss_index_google/
 .gitignore
 prompts.json
+generar_embeddings_boe.ipynb
+*.ipynb
