@@ -11,7 +11,7 @@ PROMPTS_FILE_NAME = "prompts.json"
 
 MODEL_LLM_GOOGLE = "gemini-1.5-pro"
 
-K_VALUES = 16
+K_VALUES = 7
 
 MODEL_TEMPERATURE = 0.4
 
